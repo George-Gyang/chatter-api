@@ -2,20 +2,12 @@ const mongoose = require("mongoose");
 
 const { Schema, model } = mongoose;
 
-const UserSchema = new Schema({ 
-  email: { type: String, require: true, unique: true },
-  firstName: { type: String, require: true, },
+const UserSchema = new Schema({
+  firstName: { type: String, require: true },
   lastName: { type: String, require: true },
+  email: { type: String, require: true, unique: true },
   password: { type: String, require: true },
-  confirmPassword: {
-    type: String,
-    require: true,
-    validate: {
-      validator: function(value){
-        return value === this.password;
-      }, message: 'password not  match'
-    }
-  },
+  confirmPassword: { type: String, require: true },
 });
 
 const UserModel = model("User", UserSchema);
