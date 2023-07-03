@@ -3,20 +3,23 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 
 const User = require("./models/user");
-const jwt = require("jsonwebtoken")
 const bcrypt = require("bcryptjs");
-const cookieParser = require('cookie-parser')
 
 const app = express();
-const salt = bcrypt.genSaltSync(10);
-const secret = "qwertyuiop454";
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 
-app.use(cors({credentials: true, origin: 'http://localhost:3000'}));
+const salt = bcrypt.genSaltSync(10);
+const secret = "qwertyuiop454kdsjbfabnhfiUHRIU";
+
+app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(express.json());
-app.use(cookieParser())
+app.use(cookieParser());
 
 // mongodb connection
-mongoose.connect("mongodb+srv://chatter:thUEvbnjj2VcVaEE@cluster0.kaymlzu.mongodb.net/?retryWrites=true&w=majority");
+mongoose.connect(
+  "mongodb+srv://chatter:thUEvbnjj2VcVaEE@cluster0.kaymlzu.mongodb.net/?retryWrites=true&w=majority"
+);
 
 // registration
 app.post("/register", async (req, res) => {
@@ -39,27 +42,27 @@ app.post("/register", async (req, res) => {
 // login
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  const userInfor = await User.findOne({email});
+  const userInfor = await User.findOne({ email });
   // compare password with email
   const correct = bcrypt.compareSync(password, userInfor.password);
   if (correct) {
     // login
-    jwt.sign({email, id:userInfor._id}, secret, {}, (err, token) =>{
-       if(err) throw err;
-       res.cookie('token', token).json("ok")
-    })
-  } else{
+    jwt.sign({ email, id: userInfor._id }, secret, {}, (err, token) => {
+      if (err) throw err;
+      res.cookie("token", token).json("ok");
+    });
+  } else {
     res.status(400).json("wrong credentials");
   }
-  res.json(userInfor)
 });
 
-// 
-app.get('/profile', (req,res) =>{
-  jwt.verify(token, secret, {}, (err, details) =>{
+//
+app.get("/profile", (req, res) => {
+  const { token } = req.cookies;
+  jwt.verify(token, secret, {}, (err, info) => {
     if (err) throw err;
-    res.json(details)
-  })
-})
+    res.json(info);
+  });
+});
 
 app.listen(4000);
