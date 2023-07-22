@@ -8,6 +8,8 @@ const bcrypt = require("bcryptjs");
 const app = express();
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const multer = require("multer");
+const uploadMiddleware = multer({ dest: "uploads/" });
 
 const salt = bcrypt.genSaltSync(10);
 const secret = "qwertyuiop454kdsjbfabnhfiUHRIU";
@@ -49,14 +51,17 @@ app.post("/login", async (req, res) => {
     // login
     jwt.sign({ email, id: userInfor._id }, secret, {}, (err, token) => {
       if (err) throw err;
-      res.cookie("token", token).json("ok");
+      res.cookie("token", token).json({
+        id: userInfor._id,
+        email,
+      });
     });
   } else {
     res.status(400).json("wrong credentials");
   }
 });
 
-//
+// profile Token
 app.get("/profile", (req, res) => {
   const { token } = req.cookies;
   jwt.verify(token, secret, {}, (err, info) => {
@@ -65,8 +70,13 @@ app.get("/profile", (req, res) => {
   });
 });
 
-app.post("/logout", (req, res) =>{
-  res.cookie("token", "").json("ok")
-})
+app.post("/logout", (req, res) => {
+  res.cookie("token", "").json("ok");
+});
+
+// create post
+app.post("/post", uploadMiddleware.single("file"), (req, res) => {
+  res.json({ files: req.file });
+});
 
 app.listen(4000);
