@@ -19,7 +19,7 @@ const secret = "qwertyuiop454kdsjbfabnhfiUHRIU";
 app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(express.json());
 app.use(cookieParser());
-app.use("/uploads", express.static(__dirname + "/uploads"))
+app.use("/uploads", express.static(__dirname + "/uploads"));
 
 // mongodb connection
 mongoose.connect(
@@ -94,26 +94,66 @@ app.post("/post", uploadMiddleware.single("file"), async (req, res) => {
       summary,
       comment,
       file: newFilePath,
-      author:info.id,
+      author: info.id,
     });
     // res.json({ files: req.file });
     res.json(postInfor);
   });
-  });
-  
+});
 
 // fetch post
-app.get("/post", async (req, res) =>{
+app.get("/post", async (req, res) => {
   const posts = await Post.find()
-  .populate('author', ["lastName"]).sort({createdAt: -1}).limit(10);
+    .populate("author", ["lastName"])
+    .sort({ createdAt: -1 })
+    .limit(10);
   res.json(posts);
-})
+});
 
 // fetch single post
-app.get("/post/:id", async (req, res) =>{
-  const {id} = req.params;
+app.get("/post/:id", async (req, res) => {
+  const { id } = req.params;
   const postInfor = await Post.findById(id).populate("author", ["lastName"]);
-  res.json(postInfor)
-})
+  res.json(postInfor);
+});
+
+// Updating post
+app.put("/post", uploadMiddleware.single("file"), async (req, res) => {
+  let newFilePath = null;
+  if (req.file) {
+    const { originalname, path } = req.file;
+    const parts = originalname.split(".");
+    const ext = parts[parts.length - 1];
+    newFilePath = path + "." + ext;
+    fs.renameSync(path, newFilePath);
+  }
+  const { token } = req.cookies;
+  jwt.verify(token, secret, {}, async (err, info) => {
+    if (err) throw err;
+    const { id, title, summary, comment } = req.body;
+    const postInfor = await Post.findById(id);
+    const postAuthor =
+      JSON.stringify(postInfor.author) === JSON.stringify(info.id);
+    if (!postAuthor) {
+      return res.status(400).json("invalid author!!");
+    }
+    await postInfor.updateOne({
+      title,
+      summary,
+      comment,
+      file: newFilePath ? newFilePath : postInfor.file,
+    });
+    // res.json(postAuthor)
+    // const postInfor = await Post.create({
+    //   title,
+    //   summary,
+    //   comment,
+    //   file: newFilePath,
+    //   author:info.id,
+    // });
+    // res.json({ files: req.file });
+    res.json(postInfor)
+  });
+});
 
 app.listen(4000);
