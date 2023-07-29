@@ -8,6 +8,7 @@ const PostSchema = new Schema(
     summary: { type: String },
     comment: { type: String },
     file: { type: String },
+    author : {type:Schema.Types.ObjectId, ref:"User"}
   },
   {
     timestamps: true,
