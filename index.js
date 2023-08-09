@@ -117,6 +117,7 @@ app.get("/post/:id", async (req, res) => {
   res.json(postInfor);
 });
 
+
 // Updating post
 app.put("/post", uploadMiddleware.single("file"), async (req, res) => {
   let newFilePath = null;
@@ -147,6 +148,7 @@ app.put("/post", uploadMiddleware.single("file"), async (req, res) => {
     // const postInfor = await Post.create({
     //   title,
     //   summary,
+
     //   comment,
     //   file: newFilePath,
     //   author:info.id,
@@ -155,5 +157,16 @@ app.put("/post", uploadMiddleware.single("file"), async (req, res) => {
     res.json(postInfor)
   });
 });
+
+app.delete("/post/:id", (req, res) =>{
+  const {id} = req.params;
+  const deleteInfor = Post.findByIdAndDelete(id, (err, user) => {
+    if (err) {
+      res.status(500).send(err);
+    } else {
+      res.status(200).send(user);
+    }
+  });
+})
 
 app.listen(4000);
