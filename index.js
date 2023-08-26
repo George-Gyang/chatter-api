@@ -158,15 +158,28 @@ app.put("/post", uploadMiddleware.single("file"), async (req, res) => {
   });
 });
 
-app.delete("/post/:id", (req, res) =>{
+// app.delete("/post/:id", (req, res) =>{
+//   const {id} = req.params;
+//   const deleteInfor = Post.findByIdAndDelete(id, (err, user) => {
+//     if (err) {
+//       res.status(500).send(err);
+//     } else {
+//       res.status(200).send(user);
+//     }
+//   });
+//   res.json(deleteInfor)
+// })
+
+
+app.delete("/post/:id", (req, res) => {
   const {id} = req.params;
-  const deleteInfor = Post.findByIdAndDelete(id, (err, user) => {
-    if (err) {
-      res.status(500).send(err);
-    } else {
-      res.status(200).send(user);
-    }
-  });
-})
+  const deleteInfor = Post.findByIdAndDelete(id);
+
+  if (deleteInfor) {
+    res.status(200);
+  } else {
+    res.status(500).send("An error occurred while deleting the post.");
+  }
+});
 
 app.listen(4000);
