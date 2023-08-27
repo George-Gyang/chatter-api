@@ -171,14 +171,36 @@ app.put("/post", uploadMiddleware.single("file"), async (req, res) => {
 // })
 
 
-app.delete("/post/:id", (req, res) => {
+// app.delete("/post/:id", async (req, res) => {
+//   const {id} = req.params;
+//   const deleteInfor = await Post.findByIdAndDelete(id);
+
+//   if (deleteInfor) {
+//     res.status(200);
+//   } else {
+//     res.status(500).send("An error occurred while deleting the post.");
+//   }
+// });
+
+app.delete("/post/:id", async (req, res) => {
   const {id} = req.params;
-  const deleteInfor = Post.findByIdAndDelete(id);
+  const deleteInfor = await Post.findByIdAndDelete(id);
 
   if (deleteInfor) {
-    res.status(200);
+    res.status(200).json({
+      success: true,
+      message: "Post deleted successfully.",
+    });
+  } else if (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   } else {
-    res.status(500).send("An error occurred while deleting the post.");
+    res.status(500).json({
+      success: false,
+      message: "An unknown error occurred.",
+    });
   }
 });
 
